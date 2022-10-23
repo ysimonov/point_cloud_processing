@@ -9,3 +9,11 @@
 - Required: `VTK 9.2.2`
 - Required: `PCL 1.12.1` Note: cannot visualize with release version, instead build from master
 - Currently Optional: `ros2 humble` (TODO)
+
+### Build Instructions
+- In the current directory `mkdir build && cd build`
+- `cmake ..`
+- `make -j4`
+
+### Run (Inside of /build Folder)
+- `./object_detection`
