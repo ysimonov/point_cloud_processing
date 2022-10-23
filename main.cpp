@@ -35,10 +35,16 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void 
 int main()
 {
 
-    std::string filepath = "/home/yevgeniy/Documents/GitHub/data/";
+    std::string filepath = "../data/";
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
     std::vector<fs::path> filenames = readFilenamesExt(filepath, ".pcd");
+
+    if (filenames.empty())
+    {
+        std::cerr << "Could not find data files" << std::endl;
+        return EXIT_FAILURE;
+    }
 
     // sort names lexicographically
     std::sort(filenames.begin(), filenames.end());
@@ -81,26 +87,7 @@ int main()
             unsigned int number_of_points = cloud->size();
             std::cout << "Loaded " << number_of_points << " points from " << filename << " file.\n";
 
-            // for (size_t i = 0; i < 100; ++i) std::cout << cloud->points[i] << std::endl;
-
-            // Ground segmentation
-            pcl::PointIndicesPtr ground_indices = std::make_shared<pcl::PointIndices>();
-            pcl::ProgressiveMorphologicalFilter<pcl::PointXYZI> ground_filter;
-            ground_filter.setInputCloud(cloud);
-            ground_filter.setMaxWindowSize(20);
-            ground_filter.setSlope(1.0f);
-            ground_filter.setInitialDistance(-0.5f);
-            ground_filter.setMaxDistance(0.4f);
-            ground_filter.extract(ground_indices->indices);
-
-            pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
-            pcl::ExtractIndices<pcl::PointXYZI> extractor;
-            extractor.setInputCloud(cloud);
-            extractor.setIndices(ground_indices);
-            extractor.filter(*ground_cloud);
-
-            std::cout << "Ground cloud after filtering: " << std::endl;
-            std::cout << *ground_cloud << std::endl;
+            // Ground segmentation (TODO)
 
             // Visualise points
             if (first_iteration)

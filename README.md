@@ -13,7 +13,8 @@
 ### Build Instructions
 - In the current directory `mkdir build && cd build`
 - `cmake ..`
-- `make -j4`
+- `make`
 
 ### Run (Inside of /build Folder)
 - `./object_detection`
+- Press `Space` to move to the next frame, `Q` to quit
