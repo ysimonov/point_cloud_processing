@@ -19,4 +19,8 @@
 - `./object_detection`
 - Press `Space` to move to the next frame, `Q` to quit
 
-### Examples
+### Examples (Worst Cases)
+![image1](https://github.com/ysimonov/point_cloud_processing/blob/main/images/1.png)
+![image2](https://github.com/ysimonov/point_cloud_processing/blob/main/images/2.png)
+![image3](https://github.com/ysimonov/point_cloud_processing/blob/main/images/3.png)
+![image4](https://github.com/ysimonov/point_cloud_processing/blob/main/images/4.png)
