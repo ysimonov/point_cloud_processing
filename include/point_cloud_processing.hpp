@@ -1,5 +1,5 @@
-#ifndef OBJECT_DETECTION_HPP_
-#define OBJECT_DETECTION_HPP_
+#ifndef POINT_CLOUD_PROCESSING_HPP_
+#define POINT_CLOUD_PROCESSING_HPP_
 
 #include <chrono>
 #include <cstdlib>
@@ -26,4 +26,4 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
 
-#endif // OBJECT_DETECTION_HPP_
+#endif // POINT_CLOUD_PROCESSING_HPP_

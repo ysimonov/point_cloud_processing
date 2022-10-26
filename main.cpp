@@ -1,6 +1,8 @@
-#include "object_detection.hpp"
+#include "ground_segmentation.hpp"
+#include "point_cloud_processing.hpp"
 
 static bool next_iteration = false;
+static unsigned int screenshot_no = 0;
 
 namespace fs = boost::filesystem;
 
@@ -24,11 +26,17 @@ std::vector<fs::path> readFilenamesExt(fs::path const &root, std::string const &
     return paths;
 }
 
-void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void *cookie)
+void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void *viewer)
 {
     if (event.getKeySym() == "space" && event.keyDown())
     {
         next_iteration = true;
+    }
+    else if (event.getKeySym() == "s" && event.keyDown())
+    {
+        pcl::visualization::PCLVisualizer *v = static_cast<pcl::visualization::PCLVisualizer *>(viewer);
+        v->saveScreenshot("../images/screenshot_" + std::to_string(screenshot_no) + ".png");
+        ++screenshot_no;
     }
 }
 
@@ -62,7 +70,17 @@ int main()
     viewer.setBackgroundColor(0, 0, 0);
     viewer.setSize(1920, 1080); // window size
     viewer.setCameraPosition(-42, -49, 58, 0.5, 0.06, 2.59);
-    viewer.registerKeyboardCallback(&keyboardEventOccurred, (void *)nullptr);
+    viewer.registerKeyboardCallback(&keyboardEventOccurred, &viewer);
+
+    // for segmentation
+    pcl::PointCloud<pcl::PointXYZI>::Ptr ground_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
+    pcl::PointCloud<pcl::PointXYZI>::Ptr nonground_cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZI>>();
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> ground_cloud_color_handler(ground_cloud, 212, 212,
+                                                                                                212);
+    pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> nonground_cloud_color_handler(nonground_cloud, 0,
+                                                                                                   255, 0);
+    std::string ground_cloud_id = "ground";
+    std::string nonground_cloud_id = "nonground";
 
     bool first_iteration = true;
     while (viewer.wasStopped() == false)
@@ -88,15 +106,33 @@ int main()
             std::cout << "Loaded " << number_of_points << " points from " << filename << " file.\n";
 
             // Ground segmentation (TODO)
+            const auto &segmented_clouds = segmentGround<pcl::PointXYZI>(cloud, 80, 0.2);
+            ground_cloud = segmented_clouds.first;
+            nonground_cloud = segmented_clouds.second;
+
+            std::cout << "Number of ground points: " << ground_cloud->points.size() << std::endl;
+            std::cout << "Number of nonground points: " << nonground_cloud->points.size() << std::endl;
 
             // Visualise points
             if (first_iteration)
             {
-                viewer.addPointCloud(cloud, cloud_color_handler, point_cloud_id);
+                // viewer.addPointCloud(cloud, cloud_color_handler, point_cloud_id);
+
+                ground_cloud_color_handler.setInputCloud(ground_cloud);
+                viewer.addPointCloud(ground_cloud, ground_cloud_color_handler, ground_cloud_id);
+
+                nonground_cloud_color_handler.setInputCloud(nonground_cloud);
+                viewer.addPointCloud(nonground_cloud, nonground_cloud_color_handler, nonground_cloud_id);
             }
             else
             {
-                viewer.updatePointCloud(cloud, cloud_color_handler, point_cloud_id);
+                // viewer.updatePointCloud(cloud, cloud_color_handler, point_cloud_id);
+
+                ground_cloud_color_handler.setInputCloud(ground_cloud);
+                viewer.updatePointCloud(ground_cloud, ground_cloud_color_handler, ground_cloud_id);
+
+                nonground_cloud_color_handler.setInputCloud(nonground_cloud);
+                viewer.updatePointCloud(nonground_cloud, nonground_cloud_color_handler, nonground_cloud_id);
             }
 
             Eigen::Affine3f viewer_pose = viewer.getViewerPose();

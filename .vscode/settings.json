@@ -77,6 +77,8 @@
         "cfenv": "cpp",
         "variant": "cpp",
         "dense": "cpp",
-        "source_location": "cpp"
+        "source_location": "cpp",
+        "any": "cpp",
+        "regex": "cpp"
     }
 }
