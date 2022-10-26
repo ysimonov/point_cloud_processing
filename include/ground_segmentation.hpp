@@ -7,6 +7,13 @@
 #include <unordered_set>
 #include <utility>
 
+/* TODO:
+ * 1. Check https://en.wikipedia.org/wiki/Random_sample_consensus
+ * 2. Set minimum number of points to estimate parameters based on some kind of permutation (minima?)
+ * 3. Some kind of metric to break from the loop prematurely?
+ *
+ */
+
 template <typename PointT> using CloudT = typename pcl::PointCloud<PointT>::Ptr;
 
 // Ground segmentation based on RANSAC and pcl
@@ -29,7 +36,9 @@ std::pair<CloudT<PointT>, CloudT<PointT>> segmentGround(const CloudT<PointT> &cl
     float a, b, c, d;
     float distance;
     float length;
-    srand((unsigned)time(NULL));
+
+    // set randomness
+    srand((unsigned)time(nullptr));
 
     for (int iter = 0; iter < iterations; ++iter)
     {
