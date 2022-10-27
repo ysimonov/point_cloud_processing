@@ -25,19 +25,19 @@ CloudT<PointT> filterCloudDROR(const CloudT<PointT> &cloud, float lx = 0.2, floa
 
     // Downsampling
     CloudT<PointT> downsampled_cloud = std::make_shared<pcl::PointCloud<PointT>>();
-    // typename pcl::VoxelGrid<PointT> voxel_grid;
-    // voxel_grid.setInputCloud(cloud);
-    // voxel_grid.setLeafSize(lx, ly, lz);
-    // voxel_grid.filter(*downsampled_cloud);
+    typename pcl::VoxelGrid<PointT> voxel_grid;
+    voxel_grid.setInputCloud(cloud);
+    voxel_grid.setLeafSize(lx, ly, lz);
+    voxel_grid.filter(*downsampled_cloud);
 
     // Filtering (DROR)
     CloudT<PointT> filtered_cloud = std::make_shared<pcl::PointCloud<PointT>>();
 
     kdtree_ptr_t kdtree_ptr = std::make_shared<kdtree_t>();
-    // kdtree_ptr->setInputCloud(downsampled_cloud);
-    kdtree_ptr->setInputCloud(cloud);
+    kdtree_ptr->setInputCloud(downsampled_cloud);
 
-    for (typename pcl::PointCloud<PointT>::iterator it = cloud->points.begin(); it != cloud->points.end(); ++it)
+    for (typename pcl::PointCloud<PointT>::iterator it = downsampled_cloud->points.begin();
+         it != downsampled_cloud->points.end(); ++it)
     {
         const float &xi = it->x;
         const float &yi = it->y;
