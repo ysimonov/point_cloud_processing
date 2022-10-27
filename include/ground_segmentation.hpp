@@ -3,9 +3,13 @@
 
 #include <chrono>
 #include <memory>
+#include <pcl/filters/extract_indices.h>
 #include <pcl/point_cloud.h>
+#include <pcl/sample_consensus/ransac.h>
+#include <pcl/sample_consensus/sac_model_plane.h>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 /* TODO:
  * 1. Check https://en.wikipedia.org/wiki/Random_sample_consensus
@@ -18,8 +22,8 @@ template <typename PointT> using CloudT = typename pcl::PointCloud<PointT>::Ptr;
 
 // Ground segmentation based on RANSAC and pcl
 template <typename PointT>
-std::pair<CloudT<PointT>, CloudT<PointT>> segmentGround(const CloudT<PointT> &cloud, const int &iterations,
-                                                        const float &dist_threshold)
+std::pair<CloudT<PointT>, CloudT<PointT>> segmentGroundCustomRANSAC(const CloudT<PointT> &cloud, const int &iterations,
+                                                                    const float &dist_threshold)
 {
     auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -114,7 +118,56 @@ std::pair<CloudT<PointT>, CloudT<PointT>> segmentGround(const CloudT<PointT> &cl
         }
     }
 
-    std::pair<CloudT<PointT>, CloudT<PointT>> result(ground_cloud, nonground_cloud);
+    typename std::pair<CloudT<PointT>, CloudT<PointT>> result(ground_cloud, nonground_cloud);
+    // ====== Algorithm Finish ======
+
+    auto stop_time = std::chrono::high_resolution_clock::now();
+    auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count() / 1000.0f;
+
+    std::cout << "Segmentation time: " << elapsed_time << " seconds\n";
+
+    return result;
+}
+
+template <typename PointT>
+std::pair<CloudT<PointT>, CloudT<PointT>> segmentGroundPclRANSAC(const CloudT<PointT> &cloud, const int &iterations,
+                                                                 const float &dist_threshold)
+{
+
+    auto start_time = std::chrono::high_resolution_clock::now();
+
+    // ====== Algorithm Start ======
+
+    std::vector<int> ground_indices;
+    pcl::PointIndices::Ptr ground_indices_object = std::make_shared<pcl::PointIndices>();
+    pcl::Indices nonground_indices;
+
+    typename pcl::SampleConsensusModelPlane<PointT>::Ptr plane_model =
+        std::make_shared<pcl::SampleConsensusModelPlane<PointT>>(cloud);
+
+    typename pcl::RandomSampleConsensus<PointT> ransac(plane_model);
+    ransac.setMaxIterations(iterations);
+    ransac.setDistanceThreshold(dist_threshold);
+    ransac.setNumberOfThreads(0); // set threads automatically to max
+    ransac.computeModel(1);
+    ransac.getInliers(ground_indices);
+
+    CloudT<PointT> ground_cloud = std::make_shared<pcl::PointCloud<PointT>>();
+    CloudT<PointT> nonground_cloud = std::make_shared<pcl::PointCloud<PointT>>();
+
+    pcl::copyPointCloud(*cloud, ground_indices, *ground_cloud);
+
+    typename pcl::ExtractIndices<PointT> extract;
+    ground_indices_object->indices = ground_indices;
+    extract.setInputCloud(cloud);
+    extract.setIndices(ground_indices_object);
+    extract.setNegative(true);
+    extract.filter(nonground_indices);
+
+    pcl::copyPointCloud(*cloud, nonground_indices, *nonground_cloud);
+
+    typename std::pair<CloudT<PointT>, CloudT<PointT>> result(ground_cloud, nonground_cloud);
+
     // ====== Algorithm Finish ======
 
     auto stop_time = std::chrono::high_resolution_clock::now();

@@ -106,7 +106,8 @@ int main()
             std::cout << "Loaded " << number_of_points << " points from " << filename << " file.\n";
 
             // Ground segmentation (TODO)
-            const auto &segmented_clouds = segmentGround<pcl::PointXYZI>(cloud, 80, 0.2);
+            // const auto &segmented_clouds = segmentGroundCustomRANSAC<pcl::PointXYZI>(cloud, 80, 0.2);
+            const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 100, 0.25);
             ground_cloud = segmented_clouds.first;
             nonground_cloud = segmented_clouds.second;
 
