@@ -1,4 +1,5 @@
 #include "ground_segmentation.hpp"
+#include "point_cloud_preprocessing.hpp"
 #include "point_cloud_processing.hpp"
 
 static bool next_iteration = false;
@@ -105,9 +106,13 @@ int main()
             unsigned int number_of_points = cloud->size();
             std::cout << "Loaded " << number_of_points << " points from " << filename << " file.\n";
 
+            // Downsampling and filtering (TODO Improve Ransac to enable this)
+            // const auto &cloud_filtered = filterCloudDROR<pcl::PointXYZI>(cloud, 0.05, 0.05, 0.05, 3.0, 0.15, 3,
+            // 0.15);
+
             // Ground segmentation (TODO)
             // const auto &segmented_clouds = segmentGroundCustomRANSAC<pcl::PointXYZI>(cloud, 80, 0.2);
-            const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 100, 0.25);
+            const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 150, 0.25);
             ground_cloud = segmented_clouds.first;
             nonground_cloud = segmented_clouds.second;
 
