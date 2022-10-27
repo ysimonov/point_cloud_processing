@@ -24,3 +24,4 @@
 ![image2](https://github.com/ysimonov/point_cloud_processing/blob/main/images/2.png)
 ![image3](https://github.com/ysimonov/point_cloud_processing/blob/main/images/3.png)
 ![image4](https://github.com/ysimonov/point_cloud_processing/blob/main/images/4.png)
+![image5](https://github.com/ysimonov/point_cloud_processing/blob/main/images/recording.gif)
