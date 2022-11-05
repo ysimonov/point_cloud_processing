@@ -1,7 +1,7 @@
 #ifndef GROUND_SEGMENTATION_HPP_
 #define GROUND_SEGMENTATION_HPP_
 
-#include "patchworkpp.hpp"
+#include "../patchworkpp/include/patchworkpp.hpp"
 #include <chrono>
 #include <memory>
 #include <pcl/filters/extract_indices.h>

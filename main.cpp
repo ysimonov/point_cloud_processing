@@ -1,4 +1,3 @@
-#include "patchworkpp/include/patchworkpp.hpp"
 #include "point_cloud_processing.hpp"
 
 static bool next_iteration = false;
@@ -40,8 +39,25 @@ void keyboardEventOccurred(const pcl::visualization::KeyboardEvent &event, void 
     }
 }
 
-int main()
+enum class Algorithm
 {
+    RANSAC,
+    PATCHWORKPP
+};
+
+int main(int argc, char *argv[])
+{
+    int algorithm_number = static_cast<int>(Algorithm::RANSAC);
+    if ((argc > 2) && (strcmp(argv[1], "-n") == 0 || strcmp(argv[1], "--algorithm-number") == 0))
+    {
+        algorithm_number = atoi(argv[2]);
+    }
+    if (algorithm_number != 0)
+    {
+        algorithm_number = static_cast<int>(Algorithm::PATCHWORKPP);
+    }
+
+    std::cout << "Selected Algorithm: " << algorithm_number << std::endl;
 
     std::string filepath = "../data/";
 
@@ -85,7 +101,7 @@ int main()
     // Patchwork++ initialization
     patchwork::Params patchwork_parameters;
 
-    patchwork_parameters.enable_RNR = true;
+    patchwork_parameters.enable_RNR = false;
     patchwork_parameters.verbose = true;
 
     patchwork_parameters.sensor_height = 0.0; // 1.723;
@@ -135,14 +151,18 @@ int main()
             // 0.15);
 
             // Ground segmentation
-            // -------------> PATCHWORK++ <----------------
-
-            const auto &segmented_clouds = segmentGroundPatchworkpp<pcl::PointXYZI>(cloud, patchworkpp);
-
-            // -------------> RANSAC <----------------
-
-            // const auto &segmented_clouds = segmentGroundCustomRANSAC<pcl::PointXYZI>(cloud, 80, 0.2);
-            // const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 150, 0.25);
+            std::pair<pcl::PointCloud<pcl::PointXYZI>::Ptr, pcl::PointCloud<pcl::PointXYZI>::Ptr> segmented_clouds;
+            if (algorithm_number == static_cast<int>(Algorithm::RANSAC))
+            {
+                // -------------> RANSAC <----------------
+                // segmented_clouds = segmentGroundCustomRANSAC<pcl::PointXYZI>(cloud, 80, 0.2);
+                segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 150, 0.25);
+            }
+            else
+            {
+                // -------------> PATCHWORK++ <----------------
+                segmented_clouds = segmentGroundPatchworkpp<pcl::PointXYZI>(cloud, patchworkpp);
+            }
 
             ground_cloud = segmented_clouds.first;
             nonground_cloud = segmented_clouds.second;

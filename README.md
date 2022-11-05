@@ -17,6 +17,8 @@
 
 ### Run (Inside of /build Folder)
 - `./object_detection`
+- `./object_detection -n 0`
+- `./object_detection -algorithm-number 1`
 - Press `Space` to move to the next frame, `Q` to quit
 
 ### Examples (Worst Cases)
