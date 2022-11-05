@@ -193,7 +193,6 @@ void convertPCLToEigen(const pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud_pcl, Ei
 }
 
 void convertPCLToEigen(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_pcl, Eigen::MatrixXf &cloud_eigen)
-
 {
     size_t number_of_points = cloud_pcl->points.size();
     cloud_eigen = Eigen::MatrixXf(number_of_points, 3);
@@ -208,6 +207,7 @@ void convertPCLToEigen(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_pcl, Eig
 void convertEigenToPCL(const Eigen::MatrixXf &cloud_eigen, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_pcl)
 {
     size_t num_pts = cloud_eigen.rows();
+    cloud_pcl->points.clear();
     cloud_pcl->points.resize(num_pts);
     for (size_t i = 0; i < num_pts; ++i)
     {
@@ -220,6 +220,7 @@ void convertEigenToPCL(const Eigen::MatrixXf &cloud_eigen, pcl::PointCloud<pcl::
 void convertEigenToPCL(const Eigen::MatrixXf &cloud_eigen, pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud_pcl)
 {
     size_t num_pts = cloud_eigen.rows();
+    cloud_pcl->points.clear();
     cloud_pcl->points.resize(num_pts);
     for (size_t i = 0; i < num_pts; ++i)
     {
