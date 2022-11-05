@@ -4,13 +4,16 @@
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <thread>
 #include <utility>
 #include <vector>
 
 #include <eigen3/Eigen/Dense>
+#include <eigen3/Eigen/Eigenvalues>
 
+#include <pcl/common/centroid.h>
 #include <pcl/console/print.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/io/pcd_io.h>
@@ -25,5 +28,10 @@
 #define BOOST_FILESYSTEM_NO_DEPRECATED
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/path.hpp>
+
+// Local includes
+#include "ground_segmentation.hpp"
+#include "ndt_ransac.hpp"
+#include "point_cloud_preprocessing.hpp"
 
 #endif // POINT_CLOUD_PROCESSING_HPP_

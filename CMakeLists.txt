@@ -1,15 +1,11 @@
 cmake_minimum_required(VERSION 3.6 FATAL_ERROR)
 project(object_detection)
 
-# Default to C99
-if(NOT CMAKE_C_STANDARD)
-  set(CMAKE_C_STANDARD 99)
-endif()
+# Default C Standard
+set(CMAKE_C_STANDARD 11)
 
-# Default to C++14
-if(NOT CMAKE_CXX_STANDARD)
-  set(CMAKE_CXX_STANDARD 14)
-endif()
+# Default C++ Standard
+set(CMAKE_CXX_STANDARD 14)
 
 # Compile options
 add_compile_options("-O2" "-Wall" "-funroll-loops" "-lpthread")
@@ -27,6 +23,8 @@ endif()
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/patchworkpp/include
+    ${PROJECT_SOURCE_DIR}/patchworkpp/src
 )
 
 file(GLOB SOURCES
@@ -34,6 +32,8 @@ file(GLOB SOURCES
     "${PROJECT_SOURCE_DIR}/include/*.hpp"
     "${PROJECT_SOURCE_DIR}/src/*.cpp"
     "${PROJECT_SOURCE_DIR}/src/*.c"
+    "${PROJECT_SOURCE_DIR}/patchworkpp/include/*.hpp"
+    "${PROJECT_SOURCE_DIR}/patchworkpp/src/*.cpp"
 )
 
 # Eigen
@@ -56,10 +56,13 @@ add_definitions(${PCL_DEFINITIONS})
 #     set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${OpenMP_EXE_LINKER_FLAGS}")
 # endif()
 
+add_subdirectory(patchworkpp)
+
 # executable and build
 add_executable(object_detection main.cpp ${SOURCES})
 
 # linking
+target_link_libraries(object_detection PATCHWORK::patchworkpp)
 target_link_libraries(object_detection Eigen3::Eigen)
 target_link_libraries(object_detection ${VTK_LIBRARIES})
 target_link_libraries(object_detection ${PCL_LIBRARIES})

@@ -14,7 +14,7 @@ template <typename PointT> using CloudT = typename pcl::PointCloud<PointT>::Ptr;
 // lx, ly, lz - leaf sizes of the voxel grid
 template <typename PointT>
 CloudT<PointT> filterCloudDROR(const CloudT<PointT> &cloud, float lx = 0.2, float ly = 0.2, float lz = 0.2,
-                               float radius_multiplier = 2.0, float azimuth_angle_res_deg = 0.04,
+                               float radius_multiplier = 3.0, float azimuth_angle_res_deg = 0.04,
                                int min_neighbours = 3, int min_search_radius = 0.05)
 {
     using kdtree_t = typename pcl::KdTreeFLANN<PointT>;

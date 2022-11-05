@@ -1,5 +1,4 @@
-#include "ground_segmentation.hpp"
-#include "point_cloud_preprocessing.hpp"
+#include "patchworkpp/include/patchworkpp.hpp"
 #include "point_cloud_processing.hpp"
 
 static bool next_iteration = false;
@@ -83,6 +82,28 @@ int main()
     std::string ground_cloud_id = "ground";
     std::string nonground_cloud_id = "nonground";
 
+    // Patchwork++ initialization
+    patchwork::Params patchwork_parameters;
+
+    patchwork_parameters.enable_RNR = true;
+    patchwork_parameters.verbose = true;
+
+    patchwork_parameters.sensor_height = 0.0; // 1.723;
+    patchwork_parameters.uprightness_thr = 0.707;
+    patchwork_parameters.min_range = 1.0;
+    patchwork_parameters.max_range = 80.0;
+    patchwork_parameters.adaptive_seed_selection_margin = -1.1;
+
+    patchwork_parameters.num_zones = 4;
+    patchwork_parameters.num_sectors_each_zone = {16, 32, 54, 32};
+    patchwork_parameters.num_rings_each_zone = {2, 4, 4, 4};
+
+    patchwork_parameters.num_rings_of_interest = 4;
+    patchwork_parameters.elevation_thr = {0.523, 0.746, 0.879, 1.125};
+    patchwork_parameters.flatness_thr = {0.0005, 0.000725, 0.001, 0.001};
+
+    patchwork::PatchWorkpp patchworkpp(patchwork_parameters);
+
     bool first_iteration = true;
     while (viewer.wasStopped() == false)
     {
@@ -106,13 +127,23 @@ int main()
             unsigned int number_of_points = cloud->size();
             std::cout << "Loaded " << number_of_points << " points from " << filename << " file.\n";
 
+            // NDT RANSAC
+            // planefit::planeFitRANSAC<pcl::PointXYZI>(cloud);
+
             // Downsampling and filtering (TODO Improve Ransac to enable this)
             // const auto &cloud_filtered = filterCloudDROR<pcl::PointXYZI>(cloud, 0.05, 0.05, 0.05, 3.0, 0.15, 3,
             // 0.15);
 
-            // Ground segmentation (TODO)
+            // Ground segmentation
+            // -------------> PATCHWORK++ <----------------
+
+            const auto &segmented_clouds = segmentGroundPatchworkpp<pcl::PointXYZI>(cloud, patchworkpp);
+
+            // -------------> RANSAC <----------------
+
             // const auto &segmented_clouds = segmentGroundCustomRANSAC<pcl::PointXYZI>(cloud, 80, 0.2);
-            const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 150, 0.25);
+            // const auto &segmented_clouds = segmentGroundPclRANSAC<pcl::PointXYZI>(cloud, 150, 0.25);
+
             ground_cloud = segmented_clouds.first;
             nonground_cloud = segmented_clouds.second;
 

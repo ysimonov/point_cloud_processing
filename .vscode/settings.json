@@ -79,6 +79,8 @@
         "dense": "cpp",
         "source_location": "cpp",
         "any": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "core": "cpp",
+        "numericaldiff": "cpp"
     }
 }

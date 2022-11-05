@@ -1,6 +1,7 @@
 #ifndef GROUND_SEGMENTATION_HPP_
 #define GROUND_SEGMENTATION_HPP_
 
+#include "patchworkpp.hpp"
 #include <chrono>
 #include <memory>
 #include <pcl/filters/extract_indices.h>
@@ -174,6 +175,86 @@ std::pair<CloudT<PointT>, CloudT<PointT>> segmentGroundPclRANSAC(const CloudT<Po
     auto elapsed_time = std::chrono::duration_cast<std::chrono::milliseconds>(stop_time - start_time).count() / 1000.0f;
 
     std::cout << "Segmentation time: " << elapsed_time << " seconds\n";
+
+    return result;
+}
+
+void convertPCLToEigen(const pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud_pcl, Eigen::MatrixXf &cloud_eigen)
+{
+    size_t number_of_points = cloud_pcl->points.size();
+    cloud_eigen = Eigen::MatrixXf(number_of_points, 4);
+    for (size_t i = 0; i < number_of_points; ++i)
+    {
+        cloud_eigen(i, 0) = cloud_pcl->points[i].x;
+        cloud_eigen(i, 1) = cloud_pcl->points[i].y;
+        cloud_eigen(i, 2) = cloud_pcl->points[i].z;
+        cloud_eigen(i, 3) = cloud_pcl->points[i].intensity;
+    }
+}
+
+void convertPCLToEigen(const pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_pcl, Eigen::MatrixXf &cloud_eigen)
+
+{
+    size_t number_of_points = cloud_pcl->points.size();
+    cloud_eigen = Eigen::MatrixXf(number_of_points, 3);
+    for (size_t i = 0; i < number_of_points; ++i)
+    {
+        cloud_eigen(i, 0) = cloud_pcl->points[i].x;
+        cloud_eigen(i, 1) = cloud_pcl->points[i].y;
+        cloud_eigen(i, 2) = cloud_pcl->points[i].z;
+    }
+}
+
+void convertEigenToPCL(const Eigen::MatrixXf &cloud_eigen, pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud_pcl)
+{
+    size_t num_pts = cloud_eigen.rows();
+    cloud_pcl->points.resize(num_pts);
+    for (size_t i = 0; i < num_pts; ++i)
+    {
+        float intensity = 1.0f;
+        cloud_pcl->points[i].getVector3fMap() =
+            Eigen::Vector3f(cloud_eigen(i, 0), cloud_eigen(i, 1), cloud_eigen(i, 2));
+    }
+}
+
+void convertEigenToPCL(const Eigen::MatrixXf &cloud_eigen, pcl::PointCloud<pcl::PointXYZI>::Ptr &cloud_pcl)
+{
+    size_t num_pts = cloud_eigen.rows();
+    cloud_pcl->points.resize(num_pts);
+    for (size_t i = 0; i < num_pts; ++i)
+    {
+        float intensity = 1.0f;
+        cloud_pcl->points[i].getVector4fMap() =
+            Eigen::Vector4f(cloud_eigen(i, 0), cloud_eigen(i, 1), cloud_eigen(i, 2), intensity);
+    }
+}
+
+template <typename PointT>
+std::pair<CloudT<PointT>, CloudT<PointT>> segmentGroundPatchworkpp(const CloudT<PointT> &cloud,
+                                                                   patchwork::PatchWorkpp &patchworkpp)
+{
+    // Convert pcl to Eigen
+    Eigen::MatrixXf cloud_eigen;
+    convertPCLToEigen(cloud, cloud_eigen);
+
+    // Estimate Ground with PatchWork
+    patchworkpp.estimateGround(cloud_eigen);
+
+    // Get Ground and Non-ground points
+    Eigen::MatrixX3f ground_cloud_eigen = patchworkpp.getGround();
+    Eigen::MatrixX3f nonground_cloud_eigen = patchworkpp.getNonground();
+    double patchworkpp_time_tiken = patchworkpp.getTimeTaken();
+
+    // Convert back to PCL
+    CloudT<PointT> ground_cloud = std::make_shared<pcl::PointCloud<PointT>>();
+    CloudT<PointT> nonground_cloud = std::make_shared<pcl::PointCloud<PointT>>();
+
+    convertEigenToPCL(ground_cloud_eigen, ground_cloud);
+    convertEigenToPCL(nonground_cloud_eigen, nonground_cloud);
+
+    typename std::pair<CloudT<PointT>, CloudT<PointT>> result(ground_cloud, nonground_cloud);
+
+    std::cout << "Patchworkpp Time Taken : " << patchworkpp_time_tiken / 1000000 << "(sec)" << std::endl;
 
     return result;
 }
